@@ -19,6 +19,9 @@ def main():
     if args.hours is not None and not 0 < args.hours <= 24:
         parser.error("--hours must be greater than 0 and no more than 24")
     data = json.loads(args.team.read_text(encoding="utf-8-sig"))
+    repository = os.environ.get("GITHUB_REPOSITORY")
+    if repository and data.get("repository", "").casefold() != repository.casefold():
+        parser.error("roster repository does not match GITHUB_REPOSITORY")
     members = [m for m in data["members"] if m["login"].casefold() == args.login.casefold()]
     if len(members) != 1:
         parser.error("login must match exactly one configured team member")

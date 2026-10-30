@@ -23,14 +23,13 @@ Reassigning an issue does not move a branch, stop an agent, transfer uncommitted
 
 ## Check in / leave
 
-Update the roster with `availability.py`, or edit the JSON directly. `--hours` accepts a duration up to 24 hours; the stored timestamp is UTC. Example:
+Use **Actions → Set availability → Run workflow** on the default branch: `working` checks in the initiating account for 8 hours and requires an empty `login`; `away` marks the initiating account away when `login` is empty, or the specified GitHub login when provided. Alternatively run `gh workflow run availability.yml -f status=working`, `gh workflow run availability.yml -f status=away`, or `gh workflow run availability.yml -f status=away -f login=LOGIN`. The affected login must match one roster member; any participant with permission to dispatch the workflow can mark another member away. Verify **Set availability** and the subsequent **Reconcile issue owners** run; dispatching a workflow does not wait for its result. Re-running an old run repeats its original actor and inputs.
 
-```shell
-python .agents/workflow/availability.py --team .agents/team.json --login alice --hours 8
-python .agents/workflow/availability.py --team .agents/team.json --login alice --away
-```
+For short shell commands, load `.agents/workflow/aliases.ps1` (PowerShell dot-sourcing) or source `.agents/workflow/aliases.sh` (Bash) once per shell; `on`, `off`, and `off LOGIN` dispatch the same workflow. The repository is resolved from the current directory.
 
-Commit and push `.agents/team.json` to the default branch to share a check-in or early departure. The roster-push workflow then runs; expiration is handled by the scheduled run, not instantaneously. A fresh shift requires a fresh check-in. To preview or run explicitly, use `python .agents/workflow/reconcile.py --team .agents/team.json` or add `--apply`. Review workflow logs for skipped or waiting tasks. No issue is altered if the roster is missing, the target repository does not match GitHub Actions, or required permissions are unavailable.
+The availability workflow needs `contents: write` and `actions: write`; the default branch must allow its `GITHUB_TOKEN` to push. It retries concurrent push conflicts and explicitly dispatches reconciliation because token-generated pushes do not trigger the push workflow. If the dispatch fails after saving, run reconciliation manually. As a fallback, use `python .agents/workflow/availability.py --team .agents/team.json --login LOGIN --hours 8` or `--away`, then publish the roster via the repository's normal process. `--hours` accepts a duration up to 24 hours; the stored timestamp is UTC.
+
+Expiration is handled by the scheduled run, not instantaneously. A fresh shift requires a fresh check-in. To preview or run locally, use `python .agents/workflow/reconcile.py --team .agents/team.json` or add `--apply`. Review workflow logs for skipped or waiting tasks. No issue is altered if the roster is missing, the target repository does not match GitHub Actions, or required permissions are unavailable.
 
 ## Concurrency and scope
 
