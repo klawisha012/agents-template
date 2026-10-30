@@ -1,0 +1,8 @@
+{
+  "issues": [
+    {"number": 1, "blocked_by": [], "skills": ["general"], "estimate": 1},
+    {"number": 2, "blocked_by": [1], "skills": ["backend"], "estimate": 2},
+    {"number": 3, "blocked_by": [1], "skills": ["frontend"], "estimate": 1},
+    {"number": 4, "blocked_by": [2, 3], "skills": ["general"], "estimate": 1}
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "repository": "example/hackathon",
+  "members": [
+    {"login": "alice", "capacity": 1, "skills": ["frontend", "general"], "availability": {"state": "working", "until": "2099-01-01T00:00:00Z"}},
+    {"login": "bob", "capacity": 1, "skills": ["backend", "general"], "availability": {"state": "away"}},
+    {"login": "carol", "capacity": 1, "skills": ["frontend", "backend", "general"], "availability": {"state": "working", "until": "2099-01-01T00:00:00Z"}}
+  ]
+}

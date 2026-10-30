@@ -1,0 +1,6 @@
+{
+  "repository": "OWNER/REPOSITORY",
+  "members": [
+    {"login": "replace-with-real-github-login", "capacity": 1, "skills": ["general"], "availability": {"state": "away"}}
+  ]
+}

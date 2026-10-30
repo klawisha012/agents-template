@@ -1,0 +1,6 @@
+{
+  "issues": [
+    {"number": 101, "blocked_by": [], "skills": ["general"], "estimate": 1},
+    {"number": 102, "blocked_by": [101], "skills": ["general"], "estimate": 1}
+  ]
+}
