@@ -1,4 +1,6 @@
 import importlib.util
+import contextlib
+import io
 import json
 import sys
 import tempfile
@@ -49,6 +51,29 @@ class ReconciliationTests(unittest.TestCase):
                 result = reconcile.main()
         self.assertEqual(result, 2)
         gh.assert_not_called()
+
+    def test_full_handoff_from_away_owner_to_checked_in_owner(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "team.json"
+            team = {"repository": "team/repo", "members": [
+                {"login": "alice", "skills": ["backend"], "availability": {"state": "away"}},
+                {"login": "bob", "skills": ["backend"], "availability": {"state": "working", "until": "2099-01-01T00:00:00Z"}},
+            ]}
+            path.write_text(json.dumps(team), encoding="utf-8")
+            item = {"number": 7, "body": '<!-- agent-distribution: {"skills":["backend"],"estimate":1,"blocked_by":[]} -->'}
+            old = {"state": "open", "assignees": ["alice"]}
+            new = {"state": "open", "assignees": ["bob"]}
+            output = io.StringIO()
+            with patch.object(sys, "argv", ["reconcile.py", "--team", str(path), "--apply"]), \
+                 patch.dict("os.environ", {"GITHUB_REPOSITORY": "team/repo"}), \
+                 patch.object(reconcile, "pages", side_effect=[[item], []]), \
+                 patch.object(reconcile, "run_gh"), patch.object(reconcile, "fetch_issue", return_value=old), \
+                 patch("distribute.fetch_issue", side_effect=[old, new]), patch("distribute.run_gh") as gh, \
+                 contextlib.redirect_stdout(output):
+                result = reconcile.main()
+        self.assertEqual(result, 0)
+        self.assertEqual(json.loads(output.getvalue())["results"][0]["action"], "applied")
+        gh.assert_called_once_with("issue", "edit", "7", "--repo", "team/repo", "--add-assignee", "bob", "--remove-assignee", "alice")
 
 
 if __name__ == "__main__":
