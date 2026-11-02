@@ -1,8 +1,0 @@
-{
-  "issues": {
-    "1": {"state": "open", "assignees": ["bob"]},
-    "2": {"state": "open", "assignees": []},
-    "3": {"state": "open", "assignees": []},
-    "4": {"state": "open", "assignees": []}
-  }
-}

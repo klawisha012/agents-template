@@ -24,16 +24,22 @@ Look for opportunities to prefactor the code to make the implementation easier. 
 
 ### 3. Draft vertical slices
 
-Break the work into **tracer bullet** tickets.
+Break the work into **tracer bullet** slices, then split each slice into tickets by team role.
 
 <vertical-slice-rules>
 
 - Each slice cuts a narrow but COMPLETE path through every layer (schema, API, UI, tests): vertical, NOT a horizontal slice of one layer
 - A completed slice is demoable or verifiable on its own
-- Each slice is sized to fit in a single fresh context window
+- Each ticket is sized to fit in a single fresh context window
 - Any prefactoring should be done first
 
 </vertical-slice-rules>
+
+Then split each slice into **tickets** by the team roles in the `roles` catalog of `.agents/team.json` (see `docs/adr/0001-role-tickets-within-slices.md`):
+
+- A ticket needs one team role, or none when any member may take it; never more than one. A slice that needs one role (or none) stays a single ticket.
+- A slice with several tickets gets a **contract**: how its tickets fit together (API, data shapes), precise enough for them to proceed in parallel. Add a blocking edge between tickets of one slice only when one truly cannot start without the other.
+- A slice with several tickets also gets a **verification ticket** with no role, blocked by all its other tickets, that connects the parts and checks the slice end to end. Only the slice as a whole has to be demoable.
 
 Give each ticket its **blocking edges**: the other tickets that must complete before it can start. A ticket with no blockers can start immediately.
 
@@ -41,15 +47,21 @@ Give each ticket its **blocking edges**: the other tickets that must complete be
 
 ### 4. Quiz the user
 
-Present the proposed breakdown as a numbered list. For each ticket, show:
+Present the proposed breakdown grouped by slice. For each slice show the behaviour it delivers and, when it has several tickets, a short contract. For each ticket show its title, team role (`—` for none), estimate, and blockers:
 
-- **Title**: short descriptive name
-- **Blocked by**: which other tickets (if any) must complete first
-- **What it delivers**: the end-to-end behaviour this ticket makes work
+```
+Slice 1: Registration (a visitor can sign up by email)
+  Contract: POST /users {email, password} → 201 {id} | 409
+  1a. Registration API       role: backend   estimate: 2  blocked by: —
+  1b. Registration form      role: frontend  estimate: 1  blocked by: —
+  1c. Connect and verify     role: —         estimate: 1  blocked by: 1a, 1b
+```
 
 Ask the user:
 
 - Does the granularity feel right? (too coarse / too fine)
+- Are the team roles right, and does each ticket need only one?
+- Is each contract enough for its tickets to proceed in parallel?
 - Are the blocking edges correct: does each ticket only depend on tickets that genuinely gate it?
 - Should any tickets be merged or split further?
 
@@ -57,12 +69,12 @@ Iterate until the user approves the breakdown.
 
 ### 5. Publish the tickets to the configured tracker
 
-For the GitHub tracker, before creating each issue, follow `.agents/workflow/distribution.md`: include the documented distribution metadata in its body and the `ready-for-agent` label. Create blockers first so the metadata references their actual issue numbers. Without valid metadata the scheduled handoff intentionally skips the issue.
+For the GitHub tracker, follow `.agents/workflow/distribution.md`: it defines the ticket metadata and label, the slice issue for a slice with several tickets, the sub-issue links, and the publishing order. Without valid metadata distribution intentionally skips the issue.
 
 Publish the approved tickets. **How** depends on the tracker `/setup-matt-pocock-skills` configured; the tickets are the same either way, only the shape of the blocking edges changes:
 
 - **Local files** → write one file per ticket under `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01` in dependency order (blockers first). Each file's "Blocked by" lists the numbers/titles it depends on. Use the per-ticket file template below: one ticket per file, never a single combined file.
-- **A real issue tracker (GitHub, Linear, …)** → publish one issue per ticket in dependency order (blockers first) so each ticket's blocking edges can reference real identifiers. Use the platform's native blocking relationship where it has one; otherwise set each ticket's "Blocked by" to the blocking issues. If the source was an existing issue, make each ticket its sub-issue (tracker doc's operation). Apply the `ready-for-agent` triage label unless instructed otherwise; the tickets are agent-grabbable by construction.
+- **A real issue tracker (GitHub, Linear, …)** → publish one issue per ticket in dependency order (blockers first) so each ticket's blocking edges can reference real identifiers. Use the platform's native blocking relationship where it has one; otherwise set each ticket's "Blocked by" to the blocking issues. Make each ticket of a multi-ticket slice a sub-issue of its slice issue, and, if the source was an existing issue, make each slice issue or single-ticket slice a sub-issue of the source (tracker doc's operation). Apply the `ready-for-agent` triage label unless instructed otherwise; the tickets are agent-grabbable by construction.
 
 Work the **frontier**: any ticket whose blockers are all done. For a purely linear chain that means top to bottom.
 
@@ -87,7 +99,7 @@ Do NOT close or modify any parent issue.
 
 ## Parent
 
-A reference to the parent issue on the tracker (if the source was an existing issue, otherwise omit this section).
+A reference to the slice issue, which holds the contract, or to the source issue for a single-ticket slice. Omit this section when there is neither.
 
 ## What to build
 
@@ -104,8 +116,29 @@ The end-to-end behaviour this ticket makes work, from the user's perspective, no
 
 </issue-template>
 
+<slice-issue-template>
+
+## Parent
+
+A reference to the source issue (if the source was an existing issue, otherwise omit this section).
+
+## What it delivers
+
+The end-to-end behaviour of the slice, from the user's perspective.
+
+## Contract
+
+How the tickets of this slice fit together: endpoints, data shapes, events. Every ticket of the slice builds against this section.
+
+## Acceptance criteria
+
+- [ ] Criterion 1
+- [ ] Criterion 2
+
+</slice-issue-template>
+
 In either form, avoid specific file paths or code snippets: they go stale fast. Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, reducer, schema, type shape), inline it and note briefly that it came from a prototype. Trim to the decision-rich parts, not a working demo, just the important bits.
 
 ### 6. Distribute the published GitHub tickets
 
-Immediately after publishing, follow `.agents/workflow/distribution.md` in this repository. That file is the authoritative procedure for team configuration, creating the ticket manifest, assigning people, dependencies, and reporting failures. Run the assignment command for every published ticket batch; do not stop after only drafting a distribution plan. Do not distribute draft tickets, invent team members, or assign agents as people. Reassignment is allowed only for a single configured owner whose shift has ended and only to a qualified participant with an active check-in. If configuration or GitHub access is missing, leave existing tickets untouched and explain exactly what is needed to resume.
+Immediately after publishing, follow `.agents/workflow/distribution.md` in this repository. That file is the authoritative procedure for team configuration, ticket metadata, how GitHub Actions assigns owners, and reporting. Run its read-only preview for every published batch and report each ticket's owner. Do not distribute draft tickets, invent team members or roles, or assign agents as people. If configuration or GitHub access is missing, leave existing tickets untouched and explain exactly what is needed to resume.
