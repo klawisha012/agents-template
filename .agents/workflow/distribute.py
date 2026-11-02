@@ -204,7 +204,12 @@ def main():
                 issues[n] = {"state": "unknown", "assignees": []}  # a missing part only loses the owner preference
         plan = make_plan(members, tickets, issues)
         for login in sorted({row["assignee"] for row in plan if row["action"] == "planned"}):
-            run_gh("api", f"repos/{repo}/assignees/{login}")
+            try:
+                run_gh("api", f"repos/{repo}/assignees/{login}")
+            except RuntimeError as exc:
+                for row in plan:
+                    if row["action"] == "planned" and row["assignee"] == login:
+                        row.update(action="failed", error=f"{login} cannot be assigned in {repo}: {exc}")
         failed = execute(repo, plan) if args.apply else False
         print(json.dumps({"repository": repo, "mode": "apply" if args.apply else "preview", "results": plan, "skipped": skipped}, ensure_ascii=False, indent=2))
         return 1 if failed or any(row["action"] in ("skipped_changed", "conflict_after_write", "failed") for row in plan) else 0

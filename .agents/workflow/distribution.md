@@ -1,6 +1,6 @@
 # Distribute GitHub tickets
 
-The roster in `.agents/team.json` is the shared source of truth for team members and their team roles. A team role is one key of its `roles` catalog, whose value describes what the role covers. Never invent members or roles, and never assign an agent as an owner. Team roles are unrelated to the triage roles of `/triage`, which are label states. Domain terms are defined in `GLOSSARY.md`; the slicing decision is `docs/adr/0001-role-tickets-within-slices.md`.
+The roster in `.agents/team.json` is the shared source of truth for team members and their team roles. A team role is one key of its `roles` catalog, whose value describes what the role covers. Never invent members or roles, and never assign an agent as an owner. Team roles are unrelated to the triage roles of `/triage`, which are label states. Name slices, tickets, verification tickets, contracts and owners with the terms of `GLOSSARY.md`; why slices are split into role tickets is recorded in `docs/adr/0001-role-tickets-within-slices.md`.
 
 ## Ticket metadata
 
@@ -8,7 +8,7 @@ A ticket that should get an owner carries the `ready-for-agent` label and exactl
 
 `<!-- agent-distribution: {"role":"backend","estimate":2} -->`
 
-- `role` is one key of the catalog, or `null` when any member may take the ticket. A ticket never needs more than one role.
+- `role` is one key of the catalog, or `null` when any member may take the ticket.
 - `estimate` is a positive relative effort weight (1 if unknown).
 - A verification ticket also lists the other tickets of its slice and has `role: null`: `{"role":null,"estimate":1,"parts":[11,12]}`.
 
@@ -26,14 +26,14 @@ Blockers live only in GitHub's native blocking links. Distribution ignores them:
 
 ## How distribution works
 
-`.github/workflows/distribute.yml` runs when an issue labeled `ready-for-agent` is opened, labeled or unassigned, when `.agents/team.json` changes on the default branch, and manually. It reads every open `ready-for-agent` issue of the configured repository in issue-number order:
+`.github/workflows/distribute.yml` runs the distributor with `--apply`; its triggers are listed in the workflow. Each run reads every open `ready-for-agent` issue of the configured repository in issue-number order:
 
 - A ticket with an owner is never changed; its estimate counts toward the owner's load.
 - An unassigned ticket goes to the member with the lowest load ÷ `capacity` among members who have its role, or among all members for `role: null`. Ties go to the alphabetically first login.
 - A verification ticket goes to the least-loaded roster member who owns one of its parts, including owners planned earlier in the same run and owners of closed parts. Without such a member it is distributed like any other ticket.
 - When no member has the role, the ticket stays unassigned and is reported as `no_member_with_role`.
 
-Before each write the script re-reads the issue and skips it unless it is still open and unassigned; after the write it verifies the result. Inspect any `failed`, `skipped_changed` or `conflict_after_write` result before rerunning. The workflow needs only `contents: read` and `issues: write`. A copied template needs `.agents/team.json` committed to the default branch and GitHub Actions enabled. No issue is altered if the roster is missing or invalid, or if its repository does not match the Actions repository.
+Before each write the script re-reads the issue and skips it unless it is still open and unassigned; after the write it verifies the result. A login that cannot be assigned in the repository fails only its own tickets. Inspect any `failed`, `skipped_changed` or `conflict_after_write` result before rerunning. A copied template needs `.agents/team.json` committed to the default branch and GitHub Actions enabled. No issue is altered if the roster is missing or invalid, or if its repository does not match the Actions repository.
 
 ## Closing parents
 

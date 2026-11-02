@@ -164,6 +164,24 @@ class GitHubTests(unittest.TestCase):
         self.assertEqual(result, 2)
         gh.assert_not_called()
 
+    def test_unassignable_login_fails_only_its_tickets(self):
+        raw = [
+            {"number": 1, "body": body({"role": "frontend"}), "assignees": []},
+            {"number": 2, "body": body({"role": "backend"}), "assignees": []},
+        ]
+
+        def gh(*args):
+            if args[:2] == ("api", "repos/team/repo/assignees/alice"):
+                raise RuntimeError("HTTP 404")
+            return ""
+
+        states = [{"state": "open", "assignees": []}, {"state": "open", "assignees": ["bob"]}]
+        with patch.object(distribution, "pages", return_value=raw), patch.object(distribution, "fetch_issue", side_effect=states), \
+             patch.object(distribution, "run_gh", side_effect=gh):
+            result, output = self.run_main(team(member("alice", ["frontend"]), member("bob", ["backend"])), "--apply")
+        self.assertEqual(result, 1)
+        self.assertEqual([r["action"] for r in json.loads(output)["results"]], ["failed", "applied"])
+
     def test_published_slice_gets_role_owners_and_verification_owner(self):
         raw = [
             {"number": 11, "body": body({"role": "backend", "estimate": 2}), "assignees": []},

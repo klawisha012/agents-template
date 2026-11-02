@@ -5,7 +5,7 @@ import json
 import os
 import sys
 
-from distribute import REPOSITORY, run_gh
+from distribute import REPOSITORY, number, run_gh
 
 QUERY = """query($owner: String!, $name: String!, $number: Int!) {
   repository(owner: $owner, name: $name) {
@@ -50,9 +50,9 @@ def main():
     if not args.repo or not REPOSITORY.fullmatch(args.repo):
         parser.error("--repo must be OWNER/REPOSITORY")
     try:
-        print(json.dumps({"repository": args.repo, "closed_parents": close_finished_parents(args.repo, args.issue)}))
+        print(json.dumps({"repository": args.repo, "closed_parents": close_finished_parents(args.repo, number(args.issue, "--issue"))}))
         return 0
-    except (RuntimeError, KeyError, TypeError, json.JSONDecodeError) as exc:
+    except (ValueError, RuntimeError, KeyError, TypeError) as exc:
         print(f"Closing parents stopped: {exc}", file=sys.stderr)
         return 2
 

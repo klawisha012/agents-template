@@ -8,6 +8,9 @@ permissions:
   contents: read
   issues: write
 
+# No concurrency group: GitHub would cancel queued runs, and their parents would never be checked.
+# Closing an already closed parent is a no-op, so concurrent runs are harmless.
+
 jobs:
   close-parents:
     runs-on: ubuntu-latest

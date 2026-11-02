@@ -38,7 +38,7 @@ Break the work into **tracer bullet** slices, then split each slice into tickets
 Then split each slice into **tickets** by the team roles in the `roles` catalog of `.agents/team.json` (see `docs/adr/0001-role-tickets-within-slices.md`):
 
 - A ticket needs one team role, or none when any member may take it; never more than one. A slice that needs one role (or none) stays a single ticket.
-- A slice with several tickets gets a **contract**: how its tickets fit together (API, data shapes), precise enough for them to proceed in parallel. Do not add blocking edges between tickets of one slice unless one truly cannot start without the other.
+- A slice with several tickets gets a **contract**: how its tickets fit together (API, data shapes), precise enough for them to proceed in parallel. Add a blocking edge between tickets of one slice only when one truly cannot start without the other.
 - A slice with several tickets also gets a **verification ticket** with no role, blocked by all its other tickets, that connects the parts and checks the slice end to end. Only the slice as a whole has to be demoable.
 
 Give each ticket its **blocking edges**: the other tickets that must complete before it can start. A ticket with no blockers can start immediately.
@@ -74,7 +74,7 @@ For the GitHub tracker, follow `.agents/workflow/distribution.md`: it defines th
 Publish the approved tickets. **How** depends on the tracker `/setup-matt-pocock-skills` configured; the tickets are the same either way, only the shape of the blocking edges changes:
 
 - **Local files** → write one file per ticket under `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01` in dependency order (blockers first). Each file's "Blocked by" lists the numbers/titles it depends on. Use the per-ticket file template below: one ticket per file, never a single combined file.
-- **A real issue tracker (GitHub, Linear, …)** → publish one issue per ticket in dependency order (blockers first) so each ticket's blocking edges can reference real identifiers. Use the platform's native blocking relationship where it has one; otherwise set each ticket's "Blocked by" to the blocking issues. If the source was an existing issue, make each ticket its sub-issue (tracker doc's operation). Apply the `ready-for-agent` triage label unless instructed otherwise; the tickets are agent-grabbable by construction.
+- **A real issue tracker (GitHub, Linear, …)** → publish one issue per ticket in dependency order (blockers first) so each ticket's blocking edges can reference real identifiers. Use the platform's native blocking relationship where it has one; otherwise set each ticket's "Blocked by" to the blocking issues. Make each ticket of a multi-ticket slice a sub-issue of its slice issue, and, if the source was an existing issue, make each slice issue or single-ticket slice a sub-issue of the source (tracker doc's operation). Apply the `ready-for-agent` triage label unless instructed otherwise; the tickets are agent-grabbable by construction.
 
 Work the **frontier**: any ticket whose blockers are all done. For a purely linear chain that means top to bottom.
 

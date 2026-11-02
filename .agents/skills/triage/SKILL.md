@@ -44,7 +44,7 @@ These are canonical role names. The actual label strings used in the issue track
 
 State transitions: an unlabeled issue normally goes to `needs-triage` first; from there it moves to `needs-info`, `ready-for-agent`, `ready-for-human`, or `wontfix`. `needs-info` returns to `needs-triage` once the reporter replies. The maintainer can override at any time; flag transitions that look unusual and ask before proceeding.
 
-When an issue moves to `ready-for-agent` and `.agents/team.json` exists, also add the distribution metadata from `.agents/workflow/distribution.md` to the issue body: one team role from the roster's `roles` catalog (or `null` when any member may take it) and an estimate. Without it the issue gets no owner. Team roles are unrelated to the triage roles above.
+When an issue moves to `ready-for-agent` and `.agents/team.json` exists, also add the ticket metadata defined in `.agents/workflow/distribution.md` to the issue body. Without it the issue gets no owner. Team roles are unrelated to the triage roles above.
 
 ## Invocation
 
