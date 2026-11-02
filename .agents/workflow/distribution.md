@@ -21,7 +21,7 @@ Blockers live only in GitHub's native blocking links. Distribution ignores them:
    - A slice with one ticket is published as that ticket.
    - A slice with several tickets is first published as a slice issue holding its behaviour, contract and acceptance criteria, with no `ready-for-agent` label and no metadata. Every ticket of the slice is its sub-issue and points to it for the contract.
    - If the source was an existing issue, each slice issue (or single-ticket slice) is that issue's sub-issue.
-   - Publish the role tickets of a slice before its verification ticket, so that `parts` and the blocking links use real numbers. The verification ticket body says that its PR includes `Closes #<slice issue>`, and that its owner closes the slice issue by hand when no code change was needed.
+   - Publish the role tickets of a slice before its verification ticket, so that `parts` and the blocking links use real numbers.
 3. Publishing with the label starts **Distribute tickets** in GitHub Actions. Then run the read-only preview `python .agents/workflow/distribute.py --team .agents/team.json` and report each ticket's owner: an assigned ticket shows its actual owner, an unassigned one the planned owner. Report `no_member_with_role` and skipped tickets. Do not run `--apply` locally while the workflow is enabled, and do not claim that an agent was started or a PR was created.
 
 ## How distribution works
@@ -34,6 +34,10 @@ Blockers live only in GitHub's native blocking links. Distribution ignores them:
 - When no member has the role, the ticket stays unassigned and is reported as `no_member_with_role`.
 
 Before each write the script re-reads the issue and skips it unless it is still open and unassigned; after the write it verifies the result. Inspect any `failed`, `skipped_changed` or `conflict_after_write` result before rerunning. The workflow needs only `contents: read` and `issues: write`. A copied template needs `.agents/team.json` committed to the default branch and GitHub Actions enabled. No issue is altered if the roster is missing or invalid, or if its repository does not match the Actions repository.
+
+## Closing parents
+
+A ticket's PR says `Closes #<ticket>`. `.github/workflows/close-parents.yml` runs whenever an issue closes: if every sub-issue of its parent is closed, it closes the parent, then repeats for that parent's parent. So the last closed ticket of a slice closes the slice issue, and the last closed slice closes the spec. It never closes a parent in another repository or a `wayfinder:map` issue. A PR that implements an issue directly, without sub-issues, says `Closes #<issue>` itself.
 
 ## Handoff
 
