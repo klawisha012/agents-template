@@ -1,6 +1,10 @@
 {
   "repository": "OWNER/REPOSITORY",
+  "roles": {
+    "frontend": "Интерфейс, вёрстка, клиентская логика",
+    "backend": "API, база данных, серверная логика"
+  },
   "members": [
-    {"login": "replace-with-real-github-login", "capacity": 1, "skills": ["general"], "availability": {"state": "away"}}
+    {"login": "replace-with-real-github-login", "capacity": 1, "roles": ["frontend", "backend"]}
   ]
 }

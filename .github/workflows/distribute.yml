@@ -1,35 +1,37 @@
-name: Reconcile issue owners
+name: Distribute tickets
 
 on:
   workflow_dispatch:
+  issues:
+    types: [opened, labeled, unassigned]
   push:
     paths:
       - .agents/team.json
-  schedule:
-    - cron: '7,17,27,37,47,57 * * * *'
 
 permissions:
   contents: read
   issues: write
 
 concurrency:
-  group: issue-owner-reconcile
+  group: ticket-distribution
   cancel-in-progress: false
 
 jobs:
-  reconcile:
-    if: github.event_name != 'push' || github.ref_name == github.event.repository.default_branch
+  distribute:
+    if: >-
+      (github.event_name != 'push' || github.ref_name == github.event.repository.default_branch) &&
+      (github.event_name != 'issues' || contains(github.event.issue.labels.*.name, 'ready-for-agent'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.repository.default_branch }}
-      - name: Distribute and hand off eligible issues
+      - name: Give unassigned tickets an owner
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ -f .agents/team.json ]; then
-            python3 .agents/workflow/reconcile.py --team .agents/team.json --apply
+            python3 .agents/workflow/distribute.py --team .agents/team.json --apply
           else
             echo 'No roster configured; no issues changed.'
           fi
