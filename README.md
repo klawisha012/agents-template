@@ -12,7 +12,7 @@
 
 1. Нажмите **Use this template** и создайте репозиторий.
 2. Установите Python 3 и [GitHub CLI](https://cli.github.com/), выполните `gh auth login`.
-3. Скопируйте `.agents/team.example.json` в `.agents/team.json` и впишите свой репозиторий, роли и участников:
+3. Откройте `.agents/team.json` и впишите свой репозиторий, роли и участников на свои:
 
    ```json
    {
