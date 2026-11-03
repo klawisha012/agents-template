@@ -1,10 +1,11 @@
 {
-  "repository": "OWNER/REPOSITORY",
+  "repository": "klawisha012/test",
   "roles": {
     "frontend": "Интерфейс, вёрстка, клиентская логика",
     "backend": "API, база данных, серверная логика"
   },
   "members": [
-    {"login": "replace-with-real-github-login", "capacity": 1, "roles": ["frontend", "backend"]}
+    {"login": "BoBaCeo1", "capacity": 1, "roles": ["frontend"]},
+    {"login": "klawisha012", "capacity": 1, "roles": ["backend"]}
   ]
 }
